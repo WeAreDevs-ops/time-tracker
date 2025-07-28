@@ -3,9 +3,9 @@ export const generateTimeProofImage = async (entry) => {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   
-  // Set canvas size for better quality
-  canvas.width = 1200;
-  canvas.height = 800;
+  // Set canvas size for better quality - increased resolution
+  canvas.width = 1800;
+  canvas.height = 1200;
   
   // Enhanced gradient background
   const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
@@ -27,7 +27,7 @@ export const generateTimeProofImage = async (entry) => {
   ctx.globalAlpha = 1;
 
   // Header section with improved styling
-  const headerHeight = 80;
+  const headerHeight = 120;
   const headerGradient = ctx.createLinearGradient(0, 0, canvas.width, headerHeight);
   headerGradient.addColorStop(0, 'rgba(6, 182, 212, 0.9)');
   headerGradient.addColorStop(1, 'rgba(147, 51, 234, 0.9)');
@@ -44,16 +44,16 @@ export const generateTimeProofImage = async (entry) => {
   ctx.fillStyle = '#ffffff';
   
   // Employee info with better spacing - larger and easier to read
-  ctx.font = 'bold 32px Arial, sans-serif';
+  ctx.font = 'bold 48px Arial, sans-serif';
   const employeeText = `Employee: ${entry.employeeName}     Date: ${entry.date}`;
-  ctx.fillText(employeeText, canvas.width / 2, 50);
+  ctx.fillText(employeeText, canvas.width / 2, 75);
 
-  // Photo containers with enhanced design
-  const photoWidth = 450;
-  const photoHeight = 400;
-  const photoY = 110;
-  const leftPhotoX = 75;
-  const rightPhotoX = canvas.width - photoWidth - 75;
+  // Photo containers with enhanced design - larger for better quality
+  const photoWidth = 675;
+  const photoHeight = 600;
+  const photoY = 130;
+  const leftPhotoX = 100;
+  const rightPhotoX = canvas.width - photoWidth - 100;
 
   // Helper function to draw enhanced photo container
   const drawPhotoContainer = async (x, y, photo, timeLabel, timeValue, bgColor) => {
@@ -68,7 +68,7 @@ export const generateTimeProofImage = async (entry) => {
       ctx.strokeRect(x, y, photoWidth, photoHeight);
       
       // Time label header
-      const labelHeight = 60;
+      const labelHeight = 90;
       ctx.fillStyle = bgColor;
       ctx.fillRect(x, y, photoWidth, labelHeight);
       
@@ -79,9 +79,9 @@ export const generateTimeProofImage = async (entry) => {
       
       // Time label text with time included
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 22px Arial, sans-serif';
+      ctx.font = 'bold 33px Arial, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`${timeLabel} ${timeValue}`, x + photoWidth / 2, y + 38);
+      ctx.fillText(`${timeLabel} ${timeValue}`, x + photoWidth / 2, y + 57);
       
       // Photo area - now takes up remaining space
       const photoAreaY = y + labelHeight;
@@ -90,11 +90,29 @@ export const generateTimeProofImage = async (entry) => {
       if (photo) {
         const img = new Image();
         img.onload = () => {
-          // Make photo fill the entire available area
-          const drawX = x;
-          const drawY = photoAreaY;
-          const drawWidth = photoWidth;
-          const drawHeight = photoAreaHeight;
+          // Calculate scaling to fit while maintaining aspect ratio
+          const imgAspectRatio = img.width / img.height;
+          const containerAspectRatio = photoWidth / photoAreaHeight;
+          
+          let drawWidth, drawHeight, drawX, drawY;
+          
+          if (imgAspectRatio > containerAspectRatio) {
+            // Image is wider than container - fit to width
+            drawWidth = photoWidth;
+            drawHeight = photoWidth / imgAspectRatio;
+            drawX = x;
+            drawY = photoAreaY + (photoAreaHeight - drawHeight) / 2;
+          } else {
+            // Image is taller than container - fit to height
+            drawHeight = photoAreaHeight;
+            drawWidth = photoAreaHeight * imgAspectRatio;
+            drawX = x + (photoWidth - drawWidth) / 2;
+            drawY = photoAreaY;
+          }
+          
+          // Use high-quality image rendering
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
           
           ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
           
@@ -163,8 +181,8 @@ export const generateTimeProofImage = async (entry) => {
   ]);
 
   // Simplified summary section - only showing overtime
-  const summaryY = photoY + photoHeight + 40;
-  const summaryHeight = 80;
+  const summaryY = photoY + photoHeight + 60;
+  const summaryHeight = 120;
   
   // Summary background
   const summaryGradient = ctx.createLinearGradient(0, summaryY, canvas.width, summaryY + summaryHeight);
@@ -180,10 +198,10 @@ export const generateTimeProofImage = async (entry) => {
 
   // Summary content - only overtime
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 28px Arial, sans-serif';
+  ctx.font = 'bold 42px Arial, sans-serif';
   ctx.textAlign = 'center';
   
-  const summaryTextY = summaryY + 50;
+  const summaryTextY = summaryY + 75;
   
   // Calculate hours
   const hours = entry.hours || { regular: 0, overtime: 0, total: 0 };
@@ -191,9 +209,9 @@ export const generateTimeProofImage = async (entry) => {
   ctx.fillText(`Overtime: ${hours.overtime.toFixed(2)} hours`, canvas.width / 2, summaryTextY);
 
   // Footer
-  const footerY = canvas.height - 30;
+  const footerY = canvas.height - 45;
   ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-  ctx.font = '14px Arial, sans-serif';
+  ctx.font = '21px Arial, sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText('Official Time Verification Document - Work Time Tracker System', canvas.width / 2, footerY);
 
