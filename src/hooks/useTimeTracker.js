@@ -25,11 +25,15 @@ export function useTimeTracker() {
           minute: '2-digit',
         });
 
-        setCurrentEntry(prev => ({
-          ...prev,
-          [type === 'in' ? 'timeInPhoto' : 'timeOutPhoto']: e.target.result,
-          [type === 'in' ? 'timeIn' : 'timeOut']: currentTime,
-        }));
+        setCurrentEntry(prev => {
+          const timeField = type === 'in' ? 'timeIn' : 'timeOut';
+          return {
+            ...prev,
+            [type === 'in' ? 'timeInPhoto' : 'timeOutPhoto']: e.target.result,
+            // Only set time automatically if no time was previously entered
+            [timeField]: prev[timeField] || currentTime,
+          };
+        });
 
         toast({
           title: "📸 Photo uploaded!",
