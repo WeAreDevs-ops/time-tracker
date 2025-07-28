@@ -41,7 +41,6 @@ export function useTimeTracker() {
   };
 
   const calculateHours = (timeIn, timeOut, manualOvertime = 0) => {
-    const REGULAR_HOURS_THRESHOLD = 8;
     if (!timeIn || !timeOut) return { regular: 0, overtime: manualOvertime, total: manualOvertime };
     
     const [inHour, inMin] = timeIn.split(':').map(Number);
@@ -57,14 +56,10 @@ export function useTimeTracker() {
     const totalMinutes = outMinutes - inMinutes;
     const totalHours = totalMinutes / 60;
     
-    const calculatedRegularHours = Math.min(totalHours, REGULAR_HOURS_THRESHOLD);
-    const autoOvertime = Math.max(0, totalHours - REGULAR_HOURS_THRESHOLD);
-    const totalOvertime = autoOvertime + manualOvertime;
-    
     return {
-      regular: calculatedRegularHours,
-      overtime: totalOvertime,
-      total: calculatedRegularHours + totalOvertime,
+      regular: totalHours,
+      overtime: manualOvertime,
+      total: totalHours + manualOvertime,
     };
   };
 
