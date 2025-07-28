@@ -27,7 +27,7 @@ export const generateTimeProofImage = async (entry) => {
   ctx.globalAlpha = 1;
 
   // Header section with improved styling
-  const headerHeight = 120;
+  const headerHeight = 80;
   const headerGradient = ctx.createLinearGradient(0, 0, canvas.width, headerHeight);
   headerGradient.addColorStop(0, 'rgba(6, 182, 212, 0.9)');
   headerGradient.addColorStop(1, 'rgba(147, 51, 234, 0.9)');
@@ -43,19 +43,15 @@ export const generateTimeProofImage = async (entry) => {
   ctx.textAlign = 'center';
   ctx.fillStyle = '#ffffff';
   
-  // Title
+  // Employee info with better spacing - larger and easier to read
   ctx.font = 'bold 32px Arial, sans-serif';
-  ctx.fillText('EMPLOYEE TIME VERIFICATION REPORT', canvas.width / 2, 40);
-  
-  // Employee info with better spacing
-  ctx.font = 'bold 24px Arial, sans-serif';
-  const employeeText = `Employee: ${entry.employeeName} | Date: ${entry.date}`;
-  ctx.fillText(employeeText, canvas.width / 2, 80);
+  const employeeText = `Employee: ${entry.employeeName}     Date: ${entry.date}`;
+  ctx.fillText(employeeText, canvas.width / 2, 50);
 
   // Photo containers with enhanced design
   const photoWidth = 450;
-  const photoHeight = 350;
-  const photoY = 150;
+  const photoHeight = 400;
+  const photoY = 110;
   const leftPhotoX = 75;
   const rightPhotoX = canvas.width - photoWidth - 75;
 
@@ -81,36 +77,24 @@ export const generateTimeProofImage = async (entry) => {
       ctx.lineWidth = 1;
       ctx.strokeRect(x, y, photoWidth, labelHeight);
       
-      // Time label text
+      // Time label text with time included
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 22px Arial, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(timeLabel, x + photoWidth / 2, y + 38);
+      ctx.fillText(`${timeLabel} ${timeValue}`, x + photoWidth / 2, y + 38);
       
-      // Photo area
+      // Photo area - now takes up remaining space
       const photoAreaY = y + labelHeight;
-      const photoAreaHeight = photoHeight - labelHeight - 50;
+      const photoAreaHeight = photoHeight - labelHeight;
       
       if (photo) {
         const img = new Image();
         img.onload = () => {
-          // Calculate aspect ratio for proper scaling
-          const imgAspect = img.width / img.height;
-          const containerAspect = photoWidth / photoAreaHeight;
-          
-          let drawWidth, drawHeight, drawX, drawY;
-          
-          if (imgAspect > containerAspect) {
-            drawWidth = photoWidth - 20;
-            drawHeight = drawWidth / imgAspect;
-            drawX = x + 10;
-            drawY = photoAreaY + (photoAreaHeight - drawHeight) / 2;
-          } else {
-            drawHeight = photoAreaHeight - 20;
-            drawWidth = drawHeight * imgAspect;
-            drawX = x + (photoWidth - drawWidth) / 2;
-            drawY = photoAreaY + 10;
-          }
+          // Make photo fill the entire available area
+          const drawX = x;
+          const drawY = photoAreaY;
+          const drawWidth = photoWidth;
+          const drawHeight = photoAreaHeight;
           
           ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
           
@@ -119,51 +103,30 @@ export const generateTimeProofImage = async (entry) => {
           ctx.lineWidth = 1;
           ctx.strokeRect(drawX, drawY, drawWidth, drawHeight);
           
-          // Time display at bottom
-          const timeDisplayY = y + photoHeight - 30;
-          ctx.fillStyle = '#000000';
-          ctx.font = 'bold 20px Arial, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText(timeValue, x + photoWidth / 2, timeDisplayY);
-          
           resolve();
         };
         img.onerror = () => {
-          // Placeholder for missing photo
+          // Placeholder for missing photo - fill entire area
           ctx.fillStyle = 'rgba(200, 200, 200, 0.5)';
-          ctx.fillRect(x + 10, photoAreaY + 10, photoWidth - 20, photoAreaHeight - 20);
+          ctx.fillRect(x, photoAreaY, photoWidth, photoAreaHeight);
           
           ctx.fillStyle = '#666666';
           ctx.font = '18px Arial, sans-serif';
           ctx.textAlign = 'center';
           ctx.fillText('No Photo Available', x + photoWidth / 2, photoAreaY + photoAreaHeight / 2);
           
-          // Time display at bottom
-          const timeDisplayY = y + photoHeight - 30;
-          ctx.fillStyle = '#000000';
-          ctx.font = 'bold 20px Arial, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText(timeValue, x + photoWidth / 2, timeDisplayY);
-          
           resolve();
         };
         img.src = photo;
       } else {
-        // Placeholder for missing photo
+        // Placeholder for missing photo - fill entire area
         ctx.fillStyle = 'rgba(200, 200, 200, 0.5)';
-        ctx.fillRect(x + 10, photoAreaY + 10, photoWidth - 20, photoAreaHeight - 20);
+        ctx.fillRect(x, photoAreaY, photoWidth, photoAreaHeight);
         
         ctx.fillStyle = '#666666';
         ctx.font = '18px Arial, sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('No Photo Available', x + photoWidth / 2, photoAreaY + photoAreaHeight / 2);
-        
-        // Time display at bottom
-        const timeDisplayY = y + photoHeight - 30;
-        ctx.fillStyle = '#000000';
-        ctx.font = 'bold 20px Arial, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(timeValue, x + photoWidth / 2, timeDisplayY);
         
         resolve();
       }
