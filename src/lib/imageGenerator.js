@@ -60,82 +60,114 @@ export const generateTimeProofImage = async (entry) => {
   const rightPhotoX = canvas.width - photoWidth - 75;
 
   // Helper function to draw enhanced photo container
-  const drawPhotoContainer = (x, y, photo, timeLabel, timeValue, bgColor) => {
-    // Main container with rounded corners effect
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-    ctx.fillRect(x, y, photoWidth, photoHeight);
-    
-    // Container border
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(x, y, photoWidth, photoHeight);
-    
-    // Time label header
-    const labelHeight = 60;
-    ctx.fillStyle = bgColor;
-    ctx.fillRect(x, y, photoWidth, labelHeight);
-    
-    // Label border
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(x, y, photoWidth, labelHeight);
-    
-    // Time label text
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 22px Arial, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(timeLabel, x + photoWidth / 2, y + 38);
-    
-    // Photo area
-    const photoAreaY = y + labelHeight;
-    const photoAreaHeight = photoHeight - labelHeight - 50;
-    
-    if (photo) {
-      const img = new Image();
-      img.onload = () => {
-        // Calculate aspect ratio for proper scaling
-        const imgAspect = img.width / img.height;
-        const containerAspect = photoWidth / photoAreaHeight;
-        
-        let drawWidth, drawHeight, drawX, drawY;
-        
-        if (imgAspect > containerAspect) {
-          drawWidth = photoWidth - 20;
-          drawHeight = drawWidth / imgAspect;
-          drawX = x + 10;
-          drawY = photoAreaY + (photoAreaHeight - drawHeight) / 2;
-        } else {
-          drawHeight = photoAreaHeight - 20;
-          drawWidth = drawHeight * imgAspect;
-          drawX = x + (photoWidth - drawWidth) / 2;
-          drawY = photoAreaY + 10;
-        }
-        
-        ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
-        
-        // Photo border
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(drawX, drawY, drawWidth, drawHeight);
-      };
-      img.src = photo;
-    } else {
-      // Placeholder for missing photo
-      ctx.fillStyle = 'rgba(200, 200, 200, 0.5)';
-      ctx.fillRect(x + 10, photoAreaY + 10, photoWidth - 20, photoAreaHeight - 20);
+  const drawPhotoContainer = async (x, y, photo, timeLabel, timeValue, bgColor) => {
+    return new Promise((resolve) => {
+      // Main container with rounded corners effect
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+      ctx.fillRect(x, y, photoWidth, photoHeight);
       
-      ctx.fillStyle = '#666666';
-      ctx.font = '18px Arial, sans-serif';
+      // Container border
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x, y, photoWidth, photoHeight);
+      
+      // Time label header
+      const labelHeight = 60;
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(x, y, photoWidth, labelHeight);
+      
+      // Label border
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x, y, photoWidth, labelHeight);
+      
+      // Time label text
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 22px Arial, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('No Photo Available', x + photoWidth / 2, photoAreaY + photoAreaHeight / 2);
-    }
-    
-    // Time display at bottom
-    const timeDisplayY = y + photoHeight - 30;
-    ctx.fillStyle = '#000000';
-    ctx.font = 'bold 20px Arial, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(timeValue, x + photoWidth / 2, timeDisplayY);
+      ctx.fillText(timeLabel, x + photoWidth / 2, y + 38);
+      
+      // Photo area
+      const photoAreaY = y + labelHeight;
+      const photoAreaHeight = photoHeight - labelHeight - 50;
+      
+      if (photo) {
+        const img = new Image();
+        img.onload = () => {
+          // Calculate aspect ratio for proper scaling
+          const imgAspect = img.width / img.height;
+          const containerAspect = photoWidth / photoAreaHeight;
+          
+          let drawWidth, drawHeight, drawX, drawY;
+          
+          if (imgAspect > containerAspect) {
+            drawWidth = photoWidth - 20;
+            drawHeight = drawWidth / imgAspect;
+            drawX = x + 10;
+            drawY = photoAreaY + (photoAreaHeight - drawHeight) / 2;
+          } else {
+            drawHeight = photoAreaHeight - 20;
+            drawWidth = drawHeight * imgAspect;
+            drawX = x + (photoWidth - drawWidth) / 2;
+            drawY = photoAreaY + 10;
+          }
+          
+          ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+          
+          // Photo border
+          ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(drawX, drawY, drawWidth, drawHeight);
+          
+          // Time display at bottom
+          const timeDisplayY = y + photoHeight - 30;
+          ctx.fillStyle = '#000000';
+          ctx.font = 'bold 20px Arial, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(timeValue, x + photoWidth / 2, timeDisplayY);
+          
+          resolve();
+        };
+        img.onerror = () => {
+          // Placeholder for missing photo
+          ctx.fillStyle = 'rgba(200, 200, 200, 0.5)';
+          ctx.fillRect(x + 10, photoAreaY + 10, photoWidth - 20, photoAreaHeight - 20);
+          
+          ctx.fillStyle = '#666666';
+          ctx.font = '18px Arial, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('No Photo Available', x + photoWidth / 2, photoAreaY + photoAreaHeight / 2);
+          
+          // Time display at bottom
+          const timeDisplayY = y + photoHeight - 30;
+          ctx.fillStyle = '#000000';
+          ctx.font = 'bold 20px Arial, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(timeValue, x + photoWidth / 2, timeDisplayY);
+          
+          resolve();
+        };
+        img.src = photo;
+      } else {
+        // Placeholder for missing photo
+        ctx.fillStyle = 'rgba(200, 200, 200, 0.5)';
+        ctx.fillRect(x + 10, photoAreaY + 10, photoWidth - 20, photoAreaHeight - 20);
+        
+        ctx.fillStyle = '#666666';
+        ctx.font = '18px Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('No Photo Available', x + photoWidth / 2, photoAreaY + photoAreaHeight / 2);
+        
+        // Time display at bottom
+        const timeDisplayY = y + photoHeight - 30;
+        ctx.fillStyle = '#000000';
+        ctx.font = 'bold 20px Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(timeValue, x + photoWidth / 2, timeDisplayY);
+        
+        resolve();
+      }
+    });
   };
 
   // Format times for display
@@ -147,28 +179,29 @@ export const generateTimeProofImage = async (entry) => {
     return `${displayHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} ${period}`;
   };
 
-  // Draw photo containers
-  drawPhotoContainer(
-    leftPhotoX, 
-    photoY, 
-    entry.timeInPhoto, 
-    'TIME IN', 
-    formatDisplayTime(entry.timeIn),
-    '#10b981'
-  );
-  
-  drawPhotoContainer(
-    rightPhotoX, 
-    photoY, 
-    entry.timeOutPhoto, 
-    'TIME OUT', 
-    formatDisplayTime(entry.timeOut),
-    '#dc2626'
-  );
+  // Draw photo containers and wait for them to load
+  await Promise.all([
+    drawPhotoContainer(
+      leftPhotoX, 
+      photoY, 
+      entry.timeInPhoto, 
+      'TIME IN', 
+      formatDisplayTime(entry.timeIn),
+      '#10b981'
+    ),
+    drawPhotoContainer(
+      rightPhotoX, 
+      photoY, 
+      entry.timeOutPhoto, 
+      'TIME OUT', 
+      formatDisplayTime(entry.timeOut),
+      '#dc2626'
+    )
+  ]);
 
-  // Enhanced summary section
+  // Simplified summary section - only showing overtime
   const summaryY = photoY + photoHeight + 40;
-  const summaryHeight = 120;
+  const summaryHeight = 80;
   
   // Summary background
   const summaryGradient = ctx.createLinearGradient(0, summaryY, canvas.width, summaryY + summaryHeight);
@@ -182,25 +215,17 @@ export const generateTimeProofImage = async (entry) => {
   ctx.lineWidth = 2;
   ctx.strokeRect(50, summaryY, canvas.width - 100, summaryHeight);
 
-  // Summary content
+  // Summary content - only overtime
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 24px Arial, sans-serif';
-  ctx.textAlign = 'left';
+  ctx.font = 'bold 28px Arial, sans-serif';
+  ctx.textAlign = 'center';
   
-  const leftCol = 100;
-  const rightCol = canvas.width / 2 + 50;
-  const summaryTextY = summaryY + 35;
+  const summaryTextY = summaryY + 50;
   
   // Calculate hours
   const hours = entry.hours || { regular: 0, overtime: 0, total: 0 };
   
-  ctx.fillText(`Regular Hours: ${hours.regular.toFixed(2)}`, leftCol, summaryTextY);
-  ctx.fillText(`Overtime Hours: ${hours.overtime.toFixed(2)}`, rightCol, summaryTextY);
-  ctx.fillText(`Total Hours: ${hours.total.toFixed(2)}`, leftCol, summaryTextY + 40);
-  
-  // Generation timestamp
-  const timestamp = new Date().toLocaleString();
-  ctx.fillText(`Generated: ${timestamp}`, rightCol, summaryTextY + 40);
+  ctx.fillText(`Overtime: ${hours.overtime.toFixed(2)} hours`, canvas.width / 2, summaryTextY);
 
   // Footer
   const footerY = canvas.height - 30;
