@@ -48,26 +48,17 @@ export const generateTimeProofImage = async (entry) => {
   const employeeText = `Employee: ${entry.employeeName}     Date: ${entry.date}`;
   ctx.fillText(employeeText, canvas.width / 2, 75);
 
-  // Photo containers with enhanced design - larger for better quality
-  const photoWidth = 675;
-  const photoHeight = 600;
+  // Photo containers with enhanced design - much larger for better quality
+  const photoWidth = 800;
+  const photoHeight = 750;
   const photoY = 130;
-  const leftPhotoX = 100;
-  const rightPhotoX = canvas.width - photoWidth - 100;
+  const leftPhotoX = 75;
+  const rightPhotoX = canvas.width - photoWidth - 75;
 
   // Helper function to draw enhanced photo container
   const drawPhotoContainer = async (x, y, photo, timeLabel, timeValue, bgColor) => {
     return new Promise((resolve) => {
-      // Main container with rounded corners effect
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-      ctx.fillRect(x, y, photoWidth, photoHeight);
-      
-      // Container border
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(x, y, photoWidth, photoHeight);
-      
-      // Time label header
+      // Time label header only - no white background container
       const labelHeight = 90;
       ctx.fillStyle = bgColor;
       ctx.fillRect(x, y, photoWidth, labelHeight);
@@ -79,57 +70,39 @@ export const generateTimeProofImage = async (entry) => {
       
       // Time label text with time included
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 33px Arial, sans-serif';
+      ctx.font = 'bold 36px Arial, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(`${timeLabel} ${timeValue}`, x + photoWidth / 2, y + 57);
       
-      // Photo area - now takes up remaining space
+      // Photo area - fills remaining space completely
       const photoAreaY = y + labelHeight;
       const photoAreaHeight = photoHeight - labelHeight;
       
       if (photo) {
         const img = new Image();
         img.onload = () => {
-          // Calculate scaling to fit while maintaining aspect ratio
-          const imgAspectRatio = img.width / img.height;
-          const containerAspectRatio = photoWidth / photoAreaHeight;
-          
-          let drawWidth, drawHeight, drawX, drawY;
-          
-          if (imgAspectRatio > containerAspectRatio) {
-            // Image is wider than container - fit to width
-            drawWidth = photoWidth;
-            drawHeight = photoWidth / imgAspectRatio;
-            drawX = x;
-            drawY = photoAreaY + (photoAreaHeight - drawHeight) / 2;
-          } else {
-            // Image is taller than container - fit to height
-            drawHeight = photoAreaHeight;
-            drawWidth = photoAreaHeight * imgAspectRatio;
-            drawX = x + (photoWidth - drawWidth) / 2;
-            drawY = photoAreaY;
-          }
-          
-          // Use high-quality image rendering
+          // Fill the entire photo area without maintaining aspect ratio to avoid white space
+          // This ensures the image occupies the full container
           ctx.imageSmoothingEnabled = true;
           ctx.imageSmoothingQuality = 'high';
           
-          ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+          // Draw image to fill entire photo area
+          ctx.drawImage(img, x, photoAreaY, photoWidth, photoAreaHeight);
           
           // Photo border
-          ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
-          ctx.lineWidth = 1;
-          ctx.strokeRect(drawX, drawY, drawWidth, drawHeight);
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(x, photoAreaY, photoWidth, photoAreaHeight);
           
           resolve();
         };
         img.onerror = () => {
-          // Placeholder for missing photo - fill entire area
-          ctx.fillStyle = 'rgba(200, 200, 200, 0.5)';
+          // Placeholder for missing photo - dark background to match theme
+          ctx.fillStyle = 'rgba(60, 60, 60, 0.8)';
           ctx.fillRect(x, photoAreaY, photoWidth, photoAreaHeight);
           
-          ctx.fillStyle = '#666666';
-          ctx.font = '18px Arial, sans-serif';
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '24px Arial, sans-serif';
           ctx.textAlign = 'center';
           ctx.fillText('No Photo Available', x + photoWidth / 2, photoAreaY + photoAreaHeight / 2);
           
@@ -137,12 +110,12 @@ export const generateTimeProofImage = async (entry) => {
         };
         img.src = photo;
       } else {
-        // Placeholder for missing photo - fill entire area
-        ctx.fillStyle = 'rgba(200, 200, 200, 0.5)';
+        // Placeholder for missing photo - dark background to match theme
+        ctx.fillStyle = 'rgba(60, 60, 60, 0.8)';
         ctx.fillRect(x, photoAreaY, photoWidth, photoAreaHeight);
         
-        ctx.fillStyle = '#666666';
-        ctx.font = '18px Arial, sans-serif';
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '24px Arial, sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('No Photo Available', x + photoWidth / 2, photoAreaY + photoAreaHeight / 2);
         
@@ -180,9 +153,9 @@ export const generateTimeProofImage = async (entry) => {
     )
   ]);
 
-  // Simplified summary section - only showing overtime
-  const summaryY = photoY + photoHeight + 60;
-  const summaryHeight = 120;
+  // Overtime section moved below photos with more spacing
+  const summaryY = photoY + photoHeight + 40;
+  const summaryHeight = 100;
   
   // Summary background
   const summaryGradient = ctx.createLinearGradient(0, summaryY, canvas.width, summaryY + summaryHeight);
