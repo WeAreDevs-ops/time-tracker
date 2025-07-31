@@ -18,36 +18,41 @@ const TimeEntryForm = ({ currentEntry, setCurrentEntry, onAddEntry, onPhotoUploa
   const handlePhotoUpload = async (type, event) => {
     const file = event.target.files[0];
     if (file) {
-      // Extract timestamp from photo
+      // Show loading state
+      setCurrentEntry(prev => ({
+        ...prev,
+        [`${type}Processing`]: true
+      }));
+
+      // Extract timestamp from photo using OCR
       try {
         const timestampData = await extractPhotoTimestamp(file);
 
         if (timestampData.success) {
-          // toast({
-          //   title: "📸 Timestamp Detected!",
-          //   description: `Photo taken at ${timestampData.timeString} on ${timestampData.dateString}`,
-          // });
+          console.log(`📸 Timestamp detected: ${timestampData.detectedTime}`);
+          console.log(`Extracted text: ${timestampData.extractedText}`);
 
-          // Auto-set the time based on photo timestamp
+          // Auto-set the time based on detected timestamp in photo
           setCurrentEntry(prev => ({
             ...prev,
             [`time${type === 'in' ? 'In' : 'Out'}`]: timestampData.timeString,
-            date: timestampData.dateString
+            date: timestampData.dateString,
+            [`${type}Processing`]: false
           }));
         } else {
-          // toast({
-          //   title: "⚠️ No Timestamp Found",
-          //   description: "Photo doesn't contain timestamp metadata. Time set manually.",
-          //   variant: "destructive"
-          // });
+          console.log('⚠️ No timestamp found in photo text');
+          console.log(`Extracted text: ${timestampData.extractedText}`);
+          setCurrentEntry(prev => ({
+            ...prev,
+            [`${type}Processing`]: false
+          }));
         }
       } catch (error) {
         console.error('Error extracting timestamp:', error);
-        // toast({
-        //   title: "Error",
-        //   description: "Could not read photo timestamp",
-        //   variant: "destructive"
-        // });
+        setCurrentEntry(prev => ({
+          ...prev,
+          [`${type}Processing`]: false
+        }));
       }
 
       // Read and display the photo
@@ -119,10 +124,19 @@ const TimeEntryForm = ({ currentEntry, setCurrentEntry, onAddEntry, onPhotoUploa
             />
             <label
               htmlFor="timeInPhoto"
-              className="flex items-center justify-center w-full px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-lg cursor-pointer transition-all duration-200 transform hover:scale-105"
+              className={`flex items-center justify-center w-full px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-lg cursor-pointer transition-all duration-200 transform hover:scale-105 ${currentEntry.inProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              <Camera className="mr-2" size={16} />
-              <span className="text-white font-medium">Time In Photo</span>
+              {currentEntry.inProcessing ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                  <span className="text-white font-medium">Processing...</span>
+                </>
+              ) : (
+                <>
+                  <Camera className="mr-2" size={16} />
+                  <span className="text-white font-medium">Time In Photo</span>
+                </>
+              )}
             </label>
           </div>
         </div>
@@ -148,10 +162,19 @@ const TimeEntryForm = ({ currentEntry, setCurrentEntry, onAddEntry, onPhotoUploa
             />
             <label
               htmlFor="timeOutPhoto"
-              className="flex items-center justify-center w-full px-4 py-3 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 rounded-lg cursor-pointer transition-all duration-200 transform hover:scale-105"
+              className={`flex items-center justify-center w-full px-4 py-3 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 rounded-lg cursor-pointer transition-all duration-200 transform hover:scale-105 ${currentEntry.outProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              <Camera className="mr-2" size={16} />
-              <span className="text-white font-medium">Time Out Photo</span>
+              {currentEntry.outProcessing ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                  <span className="text-white font-medium">Processing...</span>
+                </>
+              ) : (
+                <>
+                  <Camera className="mr-2" size={16} />
+                  <span className="text-white font-medium">Time Out Photo</span>
+                </>
+              )}
             </label>
           </div>
         </div>
