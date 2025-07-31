@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Camera, Clock, Plus, Calendar, Timer, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { extractPhotoTimestamp } from '../lib/exifUtils';
 
 const formatTime12Hour = (time24) => {
   if (!time24) return '';
@@ -13,6 +14,53 @@ const formatTime12Hour = (time24) => {
 
 const TimeEntryForm = ({ currentEntry, setCurrentEntry, onAddEntry, onPhotoUpload, calculateHours }) => {
   const hours = calculateHours(currentEntry.timeIn, currentEntry.timeOut, currentEntry.manualOvertime);
+
+  const handlePhotoUpload = async (type, event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Extract timestamp from photo
+      try {
+        const timestampData = await extractPhotoTimestamp(file);
+
+        if (timestampData.success) {
+          // toast({
+          //   title: "📸 Timestamp Detected!",
+          //   description: `Photo taken at ${timestampData.timeString} on ${timestampData.dateString}`,
+          // });
+
+          // Auto-set the time based on photo timestamp
+          setCurrentEntry(prev => ({
+            ...prev,
+            [`time${type === 'in' ? 'In' : 'Out'}`]: timestampData.timeString,
+            date: timestampData.dateString
+          }));
+        } else {
+          // toast({
+          //   title: "⚠️ No Timestamp Found",
+          //   description: "Photo doesn't contain timestamp metadata. Time set manually.",
+          //   variant: "destructive"
+          // });
+        }
+      } catch (error) {
+        console.error('Error extracting timestamp:', error);
+        // toast({
+        //   title: "Error",
+        //   description: "Could not read photo timestamp",
+        //   variant: "destructive"
+        // });
+      }
+
+      // Read and display the photo
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setCurrentEntry(prev => ({
+          ...prev,
+          [`time${type === 'in' ? 'In' : 'Out'}Photo`]: e.target.result
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <>
@@ -65,7 +113,7 @@ const TimeEntryForm = ({ currentEntry, setCurrentEntry, onAddEntry, onPhotoUploa
             <input
               type="file"
               accept="image/*"
-              onChange={(e) => onPhotoUpload('in', e)}
+              onChange={(e) => handlePhotoUpload('in', e)}
               className="hidden"
               id="timeInPhoto"
             />
@@ -94,7 +142,7 @@ const TimeEntryForm = ({ currentEntry, setCurrentEntry, onAddEntry, onPhotoUploa
             <input
               type="file"
               accept="image/*"
-              onChange={(e) => onPhotoUpload('out', e)}
+              onChange={(e) => handlePhotoUpload('out', e)}
               className="hidden"
               id="timeOutPhoto"
             />
