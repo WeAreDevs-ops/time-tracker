@@ -19,26 +19,10 @@ export function useTimeTracker() {
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        const currentTime = new Date().toLocaleTimeString('en-US', {
-          hour12: false, // Keep 24-hour format for internal storage and calculation
-          hour: '2-digit',
-          minute: '2-digit',
-        });
-
-        setCurrentEntry(prev => {
-          const timeField = type === 'in' ? 'timeIn' : 'timeOut';
-          return {
-            ...prev,
-            [type === 'in' ? 'timeInPhoto' : 'timeOutPhoto']: e.target.result,
-            // Only set time automatically if no time was previously entered
-            [timeField]: prev[timeField] || currentTime,
-          };
-        });
-
-        toast({
-          title: "📸 Photo uploaded!",
-          description: `Time ${type} automatically set to ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}`,
-        });
+        setCurrentEntry(prev => ({
+          ...prev,
+          [type === 'in' ? 'timeInPhoto' : 'timeOutPhoto']: e.target.result,
+        }));
       };
       reader.readAsDataURL(file);
     }
